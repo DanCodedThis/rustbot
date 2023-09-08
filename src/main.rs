@@ -1,5 +1,5 @@
- use std::{env, collections::HashMap};
- use serenity::{
+use std::{env, collections::HashMap};
+use serenity::{
      async_trait,
      model::{channel::Message, gateway::Ready},
      prelude::*,
@@ -14,33 +14,45 @@
  struct Bot {
     reqwest: reqwest::Client
  }
+ impl Bot {
+    fn new(reqwest: reqwest::Client) -> Bot {
+        Bot {
+            reqwest,
+        }
+    }
+    async fn request(&self, json: HashMap<&str, &str>) -> Result<String, reqwest::Error> {
+        Ok(self.reqwest.post(MINE_SKIN)
+                .json(&json)
+                .send()
+                .await? 
+                .text()
+                .await?)
+    }
+ }
  #[async_trait]
  impl EventHandler for Bot {
      async fn message(&self, ctx: Context, msg: Message) {
         match msg.content.as_str() {
             HELP_COMMAND => {
                 if let Err(why) = msg.channel_id.say(&ctx.http, HELP_MESSAGE).await {
-                    println!("Error sending message: {:?}", why);
+                    eprintln!("Error sending message: {:?}", why);
                 }
             }
-            _any => if !msg.author.bot && !msg.attachments.is_empty() {
-                println!("hey");
+            any => if !msg.author.bot && !msg.attachments.is_empty() {
                 let mut map = HashMap::new();
                 map.insert("variant", "classic");
                 map.insert("name", "Test");
                 map.insert("visibility", "0");
                 map.insert("url", msg.attachments[0].url.as_str());
-                let res = self.reqwest.post(MINE_SKIN)
-                .json(&map)
-                .send()
-                .await
-                .expect("fff")
-                .text()
-                .await
-                .expect("ffff");
-                println!("{}", res);
-                if let Err(why) = msg.channel_id.say(&ctx.http, res).await {
-                    println!("Error sending message: {:?}", why);
+                match self.request(map).await {
+                    Ok(res) => {
+                        //find value and signature
+                        //use redis streams to send the any secret_key + value + signature
+                        todo!()
+                    }
+                    Err(why) => {
+                        eprintln!("Error getting a response: {:?}", why);
+                    }
                 }
             }
         }
@@ -56,13 +68,20 @@
     let intents = GatewayIntents::DIRECT_MESSAGES | GatewayIntents::MESSAGE_CONTENT | GatewayIntents::GUILD_MESSAGES; 
     let args: Vec<String> = env::args().collect();
     let token = &args[1];
-    println!("{}", token);
     let mut client = Client::builder(token, intents)
-        .event_handler(Bot{reqwest: reqwest::Client::new()})
+        .event_handler(Bot::new(reqwest::Client::new()))
         .await
         .expect("Error creating client!");
  
     if let Err(why) = client.start().await {
-         println!("Client error: {:?}", why);
+        eprintln!("Error sending message: {:?}", why);
+    }
+ }
+
+ #[cfg(test)]
+ mod tests {
+    #[test]
+    fn pass_in_many_urls() {
+        assert!(true)
     }
  }

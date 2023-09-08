@@ -23,13 +23,14 @@
                     println!("Error sending message: {:?}", why);
                 }
             }
-            any => if !msg.author.bot && msg.embeds[0].url.is_some() {
+            _any => if !msg.author.bot && !msg.embeds.is_empty() && msg.embeds[0].url.is_some() {
                 let mut map = HashMap::new();
                 map.insert("variant", "classic");
                 map.insert("name", "Test");
                 map.insert("visibility", "0");
-                map.insert("url", msg.embeds[0].url.as_ref().unwrap());
+                map.insert("url", msg.embeds[0].url.as_ref().expect("fffff"));
                 let res = self.reqwest.post(MINE_SKIN).json(&map).send().await.expect("fff");
+                println!("{}", res);
                 if let Err(why) = msg.channel_id.say(&ctx.http, res.text().await.expect("ffff")).await {
                     println!("Error sending message: {:?}", why);
                 }

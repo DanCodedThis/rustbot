@@ -5,24 +5,7 @@
      prelude::*,
  };
  
- const HELP_MESSAGE: &str = "
- Hello there, Human!
- 
- You have summoned me. Let's see about getting you what you need.
- 
- ❓ Need technical help?
- ➡️ Post in the <#CHANNEL_ID> channel and other humans will assist you.
- 
- ❓ Looking for the Code of Conduct?
- ➡️ Here it is: <https://opensource.facebook.com/code-of-conduct>
- 
- ❓ Something wrong?
- ➡️ You can flag an admin with @admin
- 
- I hope that resolves your issue!
- 
- — HelpBot 🤖
- ";
+ const HELP_MESSAGE: &str = "Hello there, Human!";
  
  const HELP_COMMAND: &str = "!help";
  

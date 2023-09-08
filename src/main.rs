@@ -28,10 +28,10 @@
  
  #[tokio::main(flavor="current_thread")]
  async fn main() {
-     let token = env::var("DISCORD_TOKEN")
-         .expect("Expected a token in the environment");
- 
-     let mut client = Client::builder(&token, GatewayIntents::GUILD_MESSAGES)
+    let intents = GatewayIntents::DIRECT_MESSAGES | GatewayIntents::MESSAGE_CONTENT | GatewayIntents::GUILD_MESSAGES;
+     let token: Vec<String> = env::args().collect();
+     println!("{}", token[1]);
+     let mut client = Client::builder(&token[1], intents)
          .event_handler(Handler)
          .await
          .expect("Err creating client");

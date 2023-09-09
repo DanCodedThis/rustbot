@@ -1,26 +1,37 @@
 use std::{env, collections::HashMap};
+use serde_json::{Result, Value};
 use serenity::{
      async_trait,
      model::{channel::Message, gateway::Ready},
      prelude::*,
  };
- 
+ //write a guide of usage
  const HELP_MESSAGE: &str = "Hello there, Human!";
  
  const HELP_COMMAND: &str = "!help";
 
  const MINE_SKIN: &str = "https://api.mineskin.org/generate/url";
  
+ struct Texture;
+ impl Texture {
+    fn send(json: &String) -> Result<()> {
+        let map: Value = serde_json::from_str(&json)?;
+        println!("{} {}", map["data"]["texture"]["value"], map["data"]["texture"]["signature"]);
+        Ok(())
+    }
+ }
  struct Bot {
-    reqwest: reqwest::Client
+    reqwest: reqwest::Client,
+    //redis: redis::Client,
  }
  impl Bot {
-    fn new(reqwest: reqwest::Client) -> Bot {
+    fn new(/*redis_url: &str*/) -> Bot {
         Bot {
-            reqwest,
+            reqwest: reqwest::Client::new(),
+            //redis: redis::Client::open(redis_url).unwrap(),
         }
     }
-    async fn request(&self, json: HashMap<&str, &str>) -> Result<String, reqwest::Error> {
+    async fn request(&self, json: HashMap<&str, &str>) -> core::result::Result<String, reqwest::Error> {
         Ok(self.reqwest.post(MINE_SKIN)
                 .json(&json)
                 .send()
@@ -47,8 +58,11 @@ use serenity::{
                 match self.request(map).await {
                     Ok(res) => {
                         //find value and signature
+                        if let Err(why) = Texture::send(&res) {
+                            eprintln!("Error getting texture: {:?}", why);
+                        }
                         //use redis streams to send the any secret_key + value + signature
-                        todo!()
+                        println!("{}", any);
                     }
                     Err(why) => {
                         eprintln!("Error getting a response: {:?}", why);
@@ -68,8 +82,9 @@ use serenity::{
     let intents = GatewayIntents::DIRECT_MESSAGES | GatewayIntents::MESSAGE_CONTENT | GatewayIntents::GUILD_MESSAGES; 
     let args: Vec<String> = env::args().collect();
     let token = &args[1];
+    //let redis_url = &args[2];
     let mut client = Client::builder(token, intents)
-        .event_handler(Bot::new(reqwest::Client::new()))
+        .event_handler(Bot::new(/*redis_url*/))
         .await
         .expect("Error creating client!");
  

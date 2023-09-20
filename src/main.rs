@@ -19,8 +19,8 @@ struct Bot {
     redis: redis::Client,
 }
 impl Bot {
-    fn new(redis_url: &str) -> Bot {
-        Bot {
+    fn new(redis_url: &str) -> Self {
+        Self {
             reqwest: reqwest::Client::new(),
             redis: redis::Client::open(redis_url).unwrap(),
         }
@@ -33,7 +33,7 @@ impl Bot {
                 .text()
                 .await?)
     }
-    async fn to_stream_string(&self, secret_key: &str, json: &String) -> Result<String> {
+    async fn to_stream_string(&self, secret_key: &str, json: &str) -> Result<String> {
         let map: Value = serde_json::from_str(&json)?;
         let mut to_send: String = String::from(secret_key) + " ";
         to_send += &serde_json::to_string(&map["data"]["texture"]["value"])?;
